@@ -12,7 +12,11 @@ def calculate_and_add_deductions(doc, method=None):
 	Calculate attendance-based deductions and add them to salary slip.
 	This function should be called via Server Script or doc_events hook.
 
-	Usage in Server Script (Salary Slip - Before Save):
+	Works with both:
+	- Manual salary slip creation
+	- Bulk creation via Payroll Entry
+
+	Usage in Server Script (Salary Slip - Before Insert AND Before Save):
 		from fours_customizations.salary_slip_handler import calculate_and_add_deductions
 		calculate_and_add_deductions(doc)
 	"""
@@ -29,14 +33,25 @@ def calculate_and_add_deductions(doc, method=None):
 	if not doc.earnings or len(doc.earnings) == 0:
 		return
 
-	# Get employee designation
-	employee = frappe.get_doc('Employee', doc.employee)
-
-	if not employee.designation:
+	# Check if we've already processed this slip (to avoid duplicate processing)
+	if hasattr(doc, '_deductions_calculated'):
 		return
 
-	# Get designation with deduction rates
-	designation = frappe.get_doc('Designation', employee.designation)
+	# Mark as processed
+	doc._deductions_calculated = True
+
+	try:
+		# Get employee designation
+		employee = frappe.get_doc('Employee', doc.employee)
+
+		if not employee.designation:
+			return
+
+		# Get designation with deduction rates
+		designation = frappe.get_doc('Designation', employee.designation)
+	except Exception as e:
+		frappe.log_error(f"Error loading employee/designation: {str(e)}", "Salary Slip Handler")
+		return
 
 	# Get attendance records for the period
 	attendance_records = frappe.get_all(

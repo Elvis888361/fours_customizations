@@ -124,9 +124,34 @@ You have two options:
 
 #### Option A: Server Script (Recommended - No Code Required)
 
+**IMPORTANT:** You need to create **TWO Server Scripts** - one for "Before Insert" and one for "Before Save" to handle both Payroll Entry bulk creation and manual creation.
+
+##### Script 1: For Payroll Entry (Bulk Creation)
+
 1. Go to **Customization > Server Script**
 2. Click **New**
 3. Fill in the details:
+   - **Name:** Salary Slip Deductions - Before Insert
+   - **DocType:** Salary Slip
+   - **Event:** Before Insert
+   - **Script Type:** DocType Event
+   - **Enabled:** ✓ (checked)
+   - **Script:**
+
+```python
+# This runs when salary slips are created via Payroll Entry
+calculate_and_add_deductions = frappe.get_attr('fours_customizations.salary_slip_handler.calculate_and_add_deductions')
+calculate_and_add_deductions(doc)
+```
+
+4. Click **Save**
+
+##### Script 2: For Manual Creation
+
+1. Go to **Customization > Server Script**
+2. Click **New**
+3. Fill in the details:
+   - **Name:** Salary Slip Deductions - Before Save
    - **DocType:** Salary Slip
    - **Event:** Before Save
    - **Script Type:** DocType Event
@@ -134,8 +159,9 @@ You have two options:
    - **Script:**
 
 ```python
+# This runs when salary slips are saved manually
 if doc.docstatus == 0:  # Only for draft salary slips
-    from fours_customizations.salary_slip_handler import calculate_and_add_deductions
+    calculate_and_add_deductions = frappe.get_attr('fours_customizations.salary_slip_handler.calculate_and_add_deductions')
     calculate_and_add_deductions(doc)
 ```
 
@@ -147,11 +173,21 @@ if doc.docstatus == 0:  # Only for draft salary slips
 - Adds deductions to the salary slip
 - Calculates and adds overtime (if configured)
 - Updates gross pay and net pay
+- Works with both Payroll Entry and manual salary slip creation
 
-**Important Workflow:**
-1. First, click **"Get Earnings and Deductions"** button in the salary slip to load the salary structure
-2. The Server Script will automatically run and add deductions/overtime
-3. Save the salary slip
+**Workflow for Payroll Entry:**
+1. Go to **HR > Payroll Entry**
+2. Select employees, pay period, etc.
+3. Click **"Create Salary Slips"**
+4. The "Before Insert" script automatically adds deductions/overtime to each slip
+5. Review and submit
+
+**Workflow for Manual Creation:**
+1. Go to **HR > Salary Slip > New**
+2. Select Employee and dates
+3. Click **"Get Earnings and Deductions"**
+4. The "Before Save" script automatically runs
+5. Save the salary slip
 
 #### Option B: Custom App Hook (For Developers)
 

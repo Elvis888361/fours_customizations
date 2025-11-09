@@ -28,7 +28,7 @@ Calculate and pay overtime based on designation-specific rates:
 
 ```bash
 cd /path/to/your/bench
-bench get-app https://github.com/YOUR_USERNAME/fours_customizations.git
+bench get-app https://github.com/Elvis888361/fours_customizations.git
 bench --site YOUR_SITE install-app fours_customizations
 ```
 
@@ -119,30 +119,15 @@ overtime_amount = add_designation_overtime_to_salary_slip(salary_slip)
 salary_slip.save()
 ```
 
-### Integration with Salary Slip (REQUIRED)
+### Manual Integration (Server Script or Custom App)
 
-**⚠️ CRITICAL:** You MUST create a Server Script to auto-calculate deductions and overtime!
+Create a Server Script for `Salary Slip` on `before_save`:
 
-Go to **Customization > Server Script** and create:
-
-**Server Script Details:**
-- **DocType:** Salary Slip
-- **Event:** Before Save
-- **Enabled:** ✓
-
-**Script:**
 ```python
-if doc.docstatus == 0:  # Only for draft salary slips
-    from fours_customizations.salary_slip_handler import calculate_and_add_deductions
-    calculate_and_add_deductions(doc)
+if doc.docstatus == 0:  # Draft
+    from fours_customizations.overtime_utils import add_designation_overtime_to_salary_slip
+    add_designation_overtime_to_salary_slip(doc)
 ```
-
-**What this does:**
-- Reads actual attendance records for the salary period
-- Counts absences, late arrivals, early exits, no checkouts
-- Calculates deduction amounts based on designation rates
-- Adds overtime earnings (if configured)
-- Updates salary slip totals automatically
 
 ## How It Works
 
