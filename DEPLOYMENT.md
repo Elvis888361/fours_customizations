@@ -116,31 +116,51 @@ Go to **HR > Salary Structure** and add the components:
 
 **Important:** Set all amounts to 0 - they will be calculated dynamically.
 
-### Step 4: Integrate with Salary Slip
+### Step 4: Integrate with Salary Slip (CRITICAL - REQUIRED)
+
+**⚠️ IMPORTANT:** Without this step, deductions and overtime will NOT be calculated automatically!
 
 You have two options:
 
-#### Option A: Server Script (Recommended - No Code)
+#### Option A: Server Script (Recommended - No Code Required)
 
-Create a Server Script:
-- **DocType:** Salary Slip
-- **Event:** Before Save
-- **Script:**
+1. Go to **Customization > Server Script**
+2. Click **New**
+3. Fill in the details:
+   - **DocType:** Salary Slip
+   - **Event:** Before Save
+   - **Script Type:** DocType Event
+   - **Enabled:** ✓ (checked)
+   - **Script:**
 
 ```python
-if doc.docstatus == 0:  # Only for draft
-    from fours_customizations.overtime_utils import add_designation_overtime_to_salary_slip
-    add_designation_overtime_to_salary_slip(doc)
+if doc.docstatus == 0:  # Only for draft salary slips
+    from fours_customizations.salary_slip_handler import calculate_and_add_deductions
+    calculate_and_add_deductions(doc)
 ```
 
-#### Option B: Custom App Hook
+4. Click **Save**
 
-In your custom app's `hooks.py`:
+**What this does:**
+- Automatically counts attendance violations (absences, late arrivals, early exits, no checkouts)
+- Calculates deduction amounts based on designation rates
+- Adds deductions to the salary slip
+- Calculates and adds overtime (if configured)
+- Updates gross pay and net pay
+
+**Important Workflow:**
+1. First, click **"Get Earnings and Deductions"** button in the salary slip to load the salary structure
+2. The Server Script will automatically run and add deductions/overtime
+3. Save the salary slip
+
+#### Option B: Custom App Hook (For Developers)
+
+If you have your own custom app, add this to your `hooks.py`:
 
 ```python
 doc_events = {
     "Salary Slip": {
-        "before_save": "your_app.salary.add_overtime"
+        "before_save": "your_app.salary.calculate_salary_slip"
     }
 }
 ```
@@ -148,10 +168,16 @@ doc_events = {
 In `your_app/salary.py`:
 
 ```python
-def add_overtime(doc, method):
+def calculate_salary_slip(doc, method):
     if doc.docstatus == 0:
-        from fours_customizations.overtime_utils import add_designation_overtime_to_salary_slip
-        add_designation_overtime_to_salary_slip(doc)
+        from fours_customizations.salary_slip_handler import calculate_and_add_deductions
+        calculate_and_add_deductions(doc)
+```
+
+Then restart your bench:
+```bash
+bench --site YOUR_SITE clear-cache
+bench restart
 ```
 
 ---

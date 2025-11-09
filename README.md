@@ -119,15 +119,30 @@ overtime_amount = add_designation_overtime_to_salary_slip(salary_slip)
 salary_slip.save()
 ```
 
-### Manual Integration (Server Script or Custom App)
+### Integration with Salary Slip (REQUIRED)
 
-Create a Server Script for `Salary Slip` on `before_save`:
+**⚠️ CRITICAL:** You MUST create a Server Script to auto-calculate deductions and overtime!
 
+Go to **Customization > Server Script** and create:
+
+**Server Script Details:**
+- **DocType:** Salary Slip
+- **Event:** Before Save
+- **Enabled:** ✓
+
+**Script:**
 ```python
-if doc.docstatus == 0:  # Draft
-    from fours_customizations.overtime_utils import add_designation_overtime_to_salary_slip
-    add_designation_overtime_to_salary_slip(doc)
+if doc.docstatus == 0:  # Only for draft salary slips
+    from fours_customizations.salary_slip_handler import calculate_and_add_deductions
+    calculate_and_add_deductions(doc)
 ```
+
+**What this does:**
+- Reads actual attendance records for the salary period
+- Counts absences, late arrivals, early exits, no checkouts
+- Calculates deduction amounts based on designation rates
+- Adds overtime earnings (if configured)
+- Updates salary slip totals automatically
 
 ## How It Works
 
