@@ -2,7 +2,7 @@ app_name = "fours_customizations"
 app_title = "Fours Customizations"
 app_publisher = "Frappe"
 app_description = "Custom app for attendance deduction management"
-app_email = "admin@example.com"
+app_email = "elvisndegwa90@gmail.com"
 app_license = "mit"
 
 # Apps
@@ -83,7 +83,7 @@ app_license = "mit"
 # ------------
 
 # before_install = "fours_customizations.install.before_install"
-# after_install = "fours_customizations.install.after_install"
+after_install = "fours_customizations.install.after_install"
 
 # Uninstallation
 # ------------
