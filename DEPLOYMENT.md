@@ -140,8 +140,8 @@ You have two options:
 
 ```python
 # This runs when salary slips are created via Payroll Entry
-calculate_and_add_deductions = frappe.get_attr('fours_customizations.salary_slip_handler.calculate_and_add_deductions')
-calculate_and_add_deductions(doc)
+import fours_customizations.salary_slip_handler as handler
+handler.calculate_and_add_deductions(doc)
 ```
 
 4. Click **Save**
@@ -161,8 +161,8 @@ calculate_and_add_deductions(doc)
 ```python
 # This runs when salary slips are saved manually
 if doc.docstatus == 0:  # Only for draft salary slips
-    calculate_and_add_deductions = frappe.get_attr('fours_customizations.salary_slip_handler.calculate_and_add_deductions')
-    calculate_and_add_deductions(doc)
+    import fours_customizations.salary_slip_handler as handler
+    handler.calculate_and_add_deductions(doc)
 ```
 
 4. Click **Save**

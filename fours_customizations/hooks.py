@@ -137,13 +137,12 @@ after_install = "fours_customizations.install.after_install"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Salary Slip": {
+		"before_save": "fours_customizations.salary_slip_handler.calculate_and_add_deductions",
+		"before_insert": "fours_customizations.salary_slip_handler.calculate_and_add_deductions"
+	}
+}
 
 # Scheduled Tasks
 # ---------------
